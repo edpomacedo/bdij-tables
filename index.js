@@ -34,16 +34,36 @@ async function main() {
         const queryDispatcher = new SPARQLQueryDispatcher(endpointUrl);
         const queryServiceResponse = await queryDispatcher.query(sparqlContent);
 
-        // 4. Coletar resultado da consulta e transformar em tabela wikitext
-        const wikitextTable = transformToWikitextTable(queryServiceResponse);
+        // 4. Substituir a string e adicionar | e repetir o ID da entidade
+        const updatedQueryServiceResponse = replaceStringInResults(queryServiceResponse);
 
-        // 5. Salvar a tabela wikitext em uma pasta do projeto, no formato txt
+        // 5. Coletar resultado da consulta e transformar em tabela wikitext
+        const wikitextTable = transformToWikitextTable(updatedQueryServiceResponse);
+
+        // 6. Salvar a tabela wikitext em uma pasta do projeto, no formato txt
         fs.writeFileSync('C:\\Development\\bdij-tables\\dump.txt', wikitextTable);
 
         console.log('Processo concluído com sucesso.');
     } catch (error) {
         console.error('Erro durante a execução:', error.message);
     }
+}
+
+function replaceStringInResults(queryResult) {
+    // Verifica se há resultados na consulta
+    if (!queryResult || !queryResult.results || !queryResult.results.bindings) {
+        return queryResult;
+    }
+
+    // Itera sobre os resultados da consulta e substitui a string
+    queryResult.results.bindings.forEach((result) => {
+        if (result.item && result.item.value) {
+            // Acrescenta "Item:" dentro dos colchetes antes do Qxxxx|Qxxxx
+            result.item.value = result.item.value.replace(/https:\/\/web\.bdij\.com\.br\/entity\/(Q\d+)/g, '[[Item:$1|$1]]');
+        }
+    });
+
+    return queryResult;
 }
 
 function transformToWikitextTable(queryResult) {
@@ -53,7 +73,7 @@ function transformToWikitextTable(queryResult) {
     }
 
     // Inicializa a tabela wikitext com os cabeçalhos das colunas
-    let wikitextTable = `{| class="wikitable"
+    let wikitextTable = `{| class="wikitable sortable" style="width:100%;"
   |+ Resultados da Consulta
   ! Entidade
   ! Rótulo
