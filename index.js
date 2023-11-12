@@ -23,7 +23,7 @@ class SPARQLQueryDispatcher {
 async function main() {
     try {
         // 1. Acessar a página mediawiki
-        const mediawikiPage = await axios.get('https://web.bdij.com.br/wiki/Project_talk:Minist%C3%A9rios');
+        const mediawikiPage = await axios.get('https://web.bdij.com.br/wiki/Project_talk:Page');
 
         // 2. Capturar conteúdo entre as tags <pre> e </pre>
         const { window } = new JSDOM(mediawikiPage.data);
@@ -84,10 +84,10 @@ function transformToWikitextTable(queryResult) {
     // Itera sobre os resultados da consulta
     queryResult.results.bindings.forEach((result) => {
         // Extrai os valores das colunas
-        const entidade = result.item?.value || 'N/A';
-        const rotulo = result.itemLabel?.value || 'N/A';
-        const descricao = result.itemDescription?.value || 'N/A';
-        const alias = result.itemAltLabel?.value || 'N/A';
+        const entidade = result.item?.value || '';
+        const rotulo = result.itemLabel?.value || '';
+        const descricao = result.itemDescription?.value || '';
+        const alias = result.itemAltLabel?.value || '';
 
         // Adiciona uma linha à tabela wikitext com os valores extraídos
         wikitextTable += `|-
